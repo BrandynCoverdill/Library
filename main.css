@@ -1,0 +1,19 @@
+/* General Styling
+============================= */
+
+*,
+*::after,
+*::before {
+	box-sizing: border-box;
+	margin: 0;
+}
+
+body {
+	margin: 0 auto;
+	background-color: gray;
+}
+
+body,
+html {
+	height: 100%;
+}
