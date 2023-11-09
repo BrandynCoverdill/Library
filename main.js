@@ -1,7 +1,148 @@
+// Global variables for document elements
 const body = document.querySelector('body');
 const dialog = document.querySelector('dialog');
 const form = document.querySelector('form');
-let library = [];
+
+/**
+ * Class for building Book objects
+ */
+class Book {
+	/**
+	 * Constructor for creating new instances of Book
+	 * @param {String} title title of the book
+	 * @param {String} author author of the book
+	 * @param {Number} numPages number of pages the book has
+	 * @param {Boolean} hasRead if the user has read this book
+	 */
+	constructor(title, author, numPages, hasRead = false) {
+		this.title = title;
+		this.author = author;
+		this.numPages = numPages;
+		this.hasRead = hasRead;
+	}
+
+	/**
+	 * Returns information about the specifics of the book
+	 * @returns {String} Book details
+	 */
+	info() {
+		return `${this.title} by ${this.author}, ${this.numPages} pages, ${
+			hasRead ? 'not read yet' : 'has read'
+		}`;
+	}
+
+	/**
+	 * Changes the read status from the selected book to true or false
+	 * @param {Number} bookId Id of the book
+	 */
+	changeRead(bookId, library) {
+		switch (library[bookId].hasRead) {
+			case true:
+				library[bookId].hasRead = false;
+				break;
+			case false:
+				library[bookId].hasRead = true;
+				break;
+			default:
+				break;
+		}
+	}
+}
+
+/**
+ * Class to build library objects that holds books
+ */
+class Library {
+	constructor() {
+		this.library = [];
+	}
+	/**
+	 * Adds a book to the library array
+	 * @param {Object} book a book to be added to the library
+	 */
+	addBookToLibrary(book) {
+		this.library.push(book);
+	}
+
+	/**
+	 * Removes the book from the library and refreshes the library with
+	 * the new view
+	 * @param {Number} bookId Id of the book
+	 */
+	removeFromLibrary(bookId) {
+		const newLibrary = this.library.filter((book) => {
+			return this.library.indexOf(book) !== +bookId;
+		});
+		this.library = newLibrary;
+		this.refreshLibrary();
+	}
+
+	refreshLibrary() {
+		// Remove old library items
+		container.textContent = '';
+
+		// Loop through the library
+		this.library.forEach((book) => {
+			// Create/style dom elements to house the library items
+			const div = document.createElement('div');
+			const h2 = document.createElement('h2');
+			const p = document.createElement('p');
+			const changeReadStatusBtn = document.createElement('button');
+			const rmBookBtn = document.createElement('button');
+
+			div.style.cssText = `
+            border: 3px solid red;
+            max-width: 250px;
+            padding: .5em;
+        `;
+
+			changeReadStatusBtn.style.cssText = `
+			margin-block: .5em;
+		`;
+
+			// Attach each book and button with a data attribute to keep
+			// track of the books and to enable functionality of buttons
+			div.dataset.bookId = this.library.indexOf(book);
+			rmBookBtn.dataset.bookId = this.library.indexOf(book);
+			changeReadStatusBtn.dataset.bookId = this.library.indexOf(book);
+
+			// Populate dom elements
+			h2.textContent = book.title;
+			p.textContent = `Book written by ${book.author}, ${
+				book.numPages
+			} pages, ${book.hasRead ? 'has read' : 'not read yet'}.`;
+			changeReadStatusBtn.textContent = 'Change Read Status';
+			changeReadStatusBtn.classList.add('changeReadStatusBtn'); // TODO
+			rmBookBtn.textContent = 'Remove Book from Library';
+			rmBookBtn.classList.add('removeBookBtn');
+
+			// Event listener for changing read status of books from the library
+			changeReadStatusBtn.addEventListener('click', () => {
+				book.changeRead(changeReadStatusBtn.dataset.bookId, this.library);
+				this.refreshLibrary();
+			});
+
+			// Append the dom elements
+			container.appendChild(div);
+			div.appendChild(h2);
+			div.appendChild(p);
+			div.appendChild(changeReadStatusBtn);
+			div.appendChild(rmBookBtn);
+		});
+
+		// Event listener for deleting books from the library
+		const removeBtns = document.querySelectorAll('.removeBookBtn');
+
+		removeBtns.forEach((button) => {
+			button.addEventListener('click', () => {
+				this.removeFromLibrary(button.dataset.bookId);
+			});
+		});
+	}
+}
+
+// Array to hold an object of books
+const library = new Library();
 
 // Format dialog style
 dialog.style.cssText = `
@@ -36,8 +177,8 @@ form.addEventListener('submit', (e) => {
 		return;
 	} else {
 		let newBook = new Book(title, author, numPages, hasRead);
-		addBookToLibrary(newBook);
-		refreshLibrary();
+		library.addBookToLibrary(newBook);
+		library.refreshLibrary();
 		document.querySelector('#title').value = '';
 		document.querySelector('#author').value = '';
 		document.querySelector('#numPages').value = '';
@@ -76,138 +217,11 @@ container.style.cssText = `
 
 body.appendChild(container);
 
-function refreshLibrary() {
-	// Remove old library items
-	container.textContent = '';
-
-	// Loop through the library
-	library.forEach((book) => {
-		// Create/style dom elements to house the library items
-		const div = document.createElement('div');
-		const h2 = document.createElement('h2');
-		const p = document.createElement('p');
-		const changeReadStatusBtn = document.createElement('button');
-		const rmBookBtn = document.createElement('button');
-
-		div.style.cssText = `
-            border: 3px solid red;
-            max-width: 250px;
-            padding: .5em;
-        `;
-
-		changeReadStatusBtn.style.cssText = `
-			margin-block: .5em;
-		`;
-
-		// Attach each book and button with a data attribute to keep
-		// track of the books and to enable functionality of buttons
-		div.dataset.bookId = library.indexOf(book);
-		rmBookBtn.dataset.bookId = library.indexOf(book);
-		changeReadStatusBtn.dataset.bookId = library.indexOf(book);
-
-		// Populate dom elements
-		h2.textContent = book.title;
-		p.textContent = `Book written by ${book.author}, ${book.numPages} pages, ${
-			book.hasRead ? 'has read' : 'not read yet'
-		}.`;
-		changeReadStatusBtn.textContent = 'Change Read Status';
-		changeReadStatusBtn.classList.add('changeReadStatusBtn');
-		rmBookBtn.textContent = 'Remove Book from Library';
-		rmBookBtn.classList.add('removeBookBtn');
-
-		// Append the dom elements
-		container.appendChild(div);
-		div.appendChild(h2);
-		div.appendChild(p);
-		div.appendChild(changeReadStatusBtn);
-		div.appendChild(rmBookBtn);
-	});
-
-	// Event listener for deleting books from the library
-	const removeBtns = document.querySelectorAll('.removeBookBtn');
-
-	removeBtns.forEach((button) => {
-		button.addEventListener('click', () => {
-			removeFromLibrary(button.dataset.bookId);
-		});
-	});
-
-	// Event listener for changing read status of books from the library
-	const changeReadBtns = document.querySelectorAll('.changeReadStatusBtn');
-
-	changeReadBtns.forEach((button) => {
-		button.addEventListener('click', () => {
-			Book.prototype.changeRead(button.dataset.bookId);
-		});
-	});
-}
-
-/**
- * Constructor to create Book objects
- * @param {String} title title of a book
- * @param {String} author author of a book
- * @param {Number} numPages number of pages the book has
- * @param {Boolean} hasRead if the user has read this book
- */
-function Book(title, author, numPages, hasRead = false) {
-	this.title = title;
-	this.author = author;
-	this.numPages = numPages;
-	this.hasRead = hasRead;
-	this.info = function () {
-		return `${this.title} by ${this.author}, ${this.numPages} pages, ${
-			hasRead ? 'not read yet' : 'has read'
-		}`;
-	};
-}
-
-/**
- * Changes the read status from the selected book to true or false
- * @param {Number} bookId Id of the book
- */
-Book.prototype.changeRead = function (bookId) {
-	switch (library[bookId].hasRead) {
-		case true:
-			library[bookId].hasRead = false;
-			refreshLibrary();
-			break;
-
-		case false:
-			library[bookId].hasRead = true;
-			refreshLibrary();
-			break;
-
-		default:
-			break;
-	}
-};
-
-/**
- * Adds a book to the library array
- * @param {Object} book a book to be added to the library
- */
-function addBookToLibrary(book) {
-	library.push(book);
-}
-
-/**
- * Removes the book from the library and refreshes the library with the
- * new view
- * @param {Number} bookId Id of the book
- */
-function removeFromLibrary(bookId) {
-	const newLibrary = library.filter((book) => {
-		return library.indexOf(book) !== +bookId;
-	});
-	library = newLibrary;
-	refreshLibrary();
-}
-
 // Temp data
 const book = new Book('The Hobbit', 'J.R.R. Tolkien', 295, false);
 const book1 = new Book("A Dog's Life", 'Ann M. Martin', 192, true);
 const book2 = new Book('It', 'Steven King', 1138, false);
-library.push(book);
-library.push(book1);
-library.push(book2);
-refreshLibrary();
+library.addBookToLibrary(book);
+library.addBookToLibrary(book1);
+library.addBookToLibrary(book2);
+library.refreshLibrary();
