@@ -2,6 +2,9 @@
 const body = document.querySelector('body');
 const dialog = document.querySelector('dialog');
 const form = document.querySelector('form');
+const formElements = document.querySelectorAll('form input');
+const formBtn = document.querySelector('form button');
+const formCheckbox = document.querySelector('form input[type="checkbox"]');
 
 /**
  * Class for building Book objects
@@ -150,11 +153,23 @@ dialog.style.cssText = `
     margin: 1em auto;
 `;
 
-// Format form in the modal
-form.style.cssText = `
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1em;
+// Format form elements in the modal
+
+formElements.forEach((el) => {
+	el.style.cssText = `
+		margin-block-start: 1em;
+		width: 100%;
+		display: block;
+	`;
+});
+
+formCheckbox.style.cssText = `
+	width: fit-content;
+`;
+
+formBtn.style.cssText = `
+	display: block;
+	margin-block-start: 1em;
 `;
 
 // Add new book to library, refresh the library, clear the inputs,
@@ -162,27 +177,77 @@ form.style.cssText = `
 form.addEventListener('submit', (e) => {
 	e.preventDefault();
 
-	let title = document.querySelector('#title').value;
-	let author = document.querySelector('#author').value;
-	let numPages = document.querySelector('#numPages').value;
-	let hasRead = document.querySelector('#hasRead').checked;
+	let title = document.querySelector('#title');
+	let author = document.querySelector('#author');
+	let numPages = document.querySelector('#numPages');
+	let hasRead = document.querySelector('#hasRead');
+	let titleError = document.querySelector('.title-error');
+	let authorError = document.querySelector('.author-error');
+	let pagesError = document.querySelector('.pages-error');
 
-	// Validation checks
+	// Validate author
+	if (author.validity.valueMissing) {
+		authorError.textContent = "Please enter an Author's name.";
+		authorError.style.cssText = `
+			display: block
+		`;
+	} else {
+		authorError.style.cssText = `
+			display: none;
+		`;
+	}
+	// Validate book
+	if (title.validity.valueMissing) {
+		titleError.textContent = "Please enter the book's name.";
+		titleError.style.cssText = `
+			display: block
+		`;
+	} else {
+		titleError.style.cssText = `
+			display: none;
+		`;
+	}
+
+	// Validate pages
+	if (numPages.validity.valueMissing) {
+		pagesError.textContent = 'Please enter the number of pages.';
+		pagesError.style.cssText = `
+			display: block
+		`;
+	} else if (numPages.validity.rangeUnderflow) {
+		pagesError.textContent = 'Please enter a number of pages above 0.';
+		pagesError.style.cssText = `
+			display: block
+		`;
+	} else {
+		pagesError.style.cssText = `
+			display: none;
+		`;
+	}
+
+	// Validation is good to go
 	if (
-		title.trim() === '' ||
-		author.trim() === '' ||
-		isNaN(numPages) ||
-		numPages === ''
+		!author.validity.valid ||
+		!title.validity.valid ||
+		!numPages.validity.valid
 	) {
 		return;
 	} else {
-		let newBook = new Book(title, author, numPages, hasRead);
+		authorError.textContent = '';
+		titleError.textContent = '';
+		pagesError.textContent = '';
+		let newBook = new Book(
+			title.value,
+			author.value,
+			numPages.value,
+			hasRead.checked
+		);
 		library.addBookToLibrary(newBook);
 		library.refreshLibrary();
-		document.querySelector('#title').value = '';
-		document.querySelector('#author').value = '';
-		document.querySelector('#numPages').value = '';
-		document.querySelector('#hasRead').checked = false;
+		title.value = '';
+		author.value = '';
+		numPages.value = '';
+		hasRead.checked = false;
 		dialog.close();
 	}
 });

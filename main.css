@@ -17,3 +17,29 @@ body,
 html {
 	height: 100%;
 }
+
+/* Form validation */
+input:invalid {
+	border: 2px solid red;
+}
+
+input:valid {
+	border: 2px solid green;
+}
+
+input:focus:invalid {
+	outline: none;
+}
+
+form > span {
+	display: none;
+	margin: 0;
+	padding: 0 0 5px 5px;
+	background: #b52134;
+	color: white;
+}
+
+form input[type='checkbox'] {
+	margin: 0;
+	width: 0;
+}

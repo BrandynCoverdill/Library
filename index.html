@@ -11,10 +11,31 @@
 	</head>
 	<body>
 		<dialog>
-			<form>
-				<input type="text" id="title" placeholder="title" />
-				<input type="text" id="author" placeholder="author" />
-				<input type="number" id="numPages" placeholder="number of pages" />
+			<form novalidate>
+				<input
+					type="text"
+					id="title"
+					placeholder="title"
+					required
+					minlength="1"
+				/>
+				<span class="title-error" aria-live="polite"></span>
+				<input
+					type="text"
+					id="author"
+					placeholder="author"
+					required
+					minlength="1"
+				/>
+				<span class="author-error" aria-live="polite"></span>
+				<input
+					type="number"
+					id="numPages"
+					placeholder="number of pages"
+					required
+					min="1"
+				/>
+				<span class="pages-error" aria-live="polite"></span>
 				<label for="hasRead">Already read this book</label>
 				<input type="checkbox" name="hasRead" id="hasRead" />
 				<button type="submit">Add Book</button>
